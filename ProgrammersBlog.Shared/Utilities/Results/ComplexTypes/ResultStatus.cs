@@ -12,5 +12,7 @@ namespace ProgrammersBlog.Shared.Utilities.Results.ComplexTypes
         Error = 1,
         Warning = 2,
         Info = 3,
+        Authentication = 4,
+        Authorization = 5
     }
 }

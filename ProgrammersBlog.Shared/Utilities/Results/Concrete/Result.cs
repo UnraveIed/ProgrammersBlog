@@ -1,4 +1,5 @@
-﻿using ProgrammersBlog.Shared.Utilities.Results.Abstract;
+﻿using ProgrammersBlog.Shared.Entities.Concrete;
+using ProgrammersBlog.Shared.Utilities.Results.Abstract;
 using ProgrammersBlog.Shared.Utilities.Results.ComplexTypes;
 using System;
 using System.Collections.Generic;
@@ -15,10 +16,23 @@ namespace ProgrammersBlog.Shared.Utilities.Results.Concrete
             this.ResultStatus = resultStatus;
         }
 
+        public Result(ResultStatus resultStatus, IEnumerable<ValidationError> validationErrors)
+        {
+            this.ResultStatus = resultStatus;
+            this.ValidationErrors = validationErrors;
+        }
+
         public Result(ResultStatus resultStatus, string message)
         {
             this.ResultStatus = resultStatus;
             this.Message = message;
+        }
+
+        public Result(ResultStatus resultStatus, string message, IEnumerable<ValidationError> validationErrors)
+        {
+            this.ResultStatus = resultStatus;
+            this.Message = message;
+            this.ValidationErrors = validationErrors;
         }
 
         public Result(ResultStatus resultStatus, string message, Exception exception)
@@ -28,10 +42,19 @@ namespace ProgrammersBlog.Shared.Utilities.Results.Concrete
             this.Exception = exception;
         }
 
+        public Result(ResultStatus resultStatus, string message, Exception exception, IEnumerable<ValidationError> validationErrors)
+        {
+            this.ResultStatus = resultStatus;
+            this.Message = message;
+            this.Exception = exception;
+            this.ValidationErrors = validationErrors;
+        }
+
         public ResultStatus ResultStatus { get; }
 
         public string Message { get; }
 
         public Exception Exception { get; }
+        public IEnumerable<ValidationError> ValidationErrors { get; set; }
     }
 }

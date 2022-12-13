@@ -1,8 +1,9 @@
 ﻿$(document).ready(function () {
+    //DataTable
     $('#articlesTable').DataTable({
         order: [
             // default olarak 4. indexe gore siralama yapacak
-            [4,"desc"]
+            [4, "desc"]
         ],
         language: {
             "emptyTable": "Tabloda herhangi bir veri mevcut değil",
@@ -248,5 +249,46 @@
                 "renameTitle": "Görünüm İsmini Değiştir"
             }
         }
+    });
+
+    //Chart.js
+
+    $.get('/Admin/Article/GetAllByViewCount/?isAscending=false&takeSize=5', function (data) {
+        const articleResult = jQuery.parseJSON(data);
+
+        let viewCountContext = $('#viewCountChart');
+        let viewCountChart = new Chart(viewCountContext, {
+            type: 'bar',
+            data: {
+                labels: articleResult.$values.map(article => article.Title),
+                datasets: [
+                    {
+                        label: 'Okunma Sayısı',
+                        data: articleResult.$values.map(article => article.ViewCount),
+                        backgroundColor: ['#00FFF6', '#00E7FF', '#009EFF', '#0014FF', '#00005C'],
+                        hoverBorderWidth: 4,
+                        hoverBorderColor: 'black'
+                    },
+                    {
+                        label: 'Yorum Sayısı',
+                        data: articleResult.$values.map(article => article.CommentCount),
+                        backgroundColor: ['#3B185F', '#C060A1', '#F0CAA3'],
+                        hoverBorderWidth: 4,
+                        hoverBorderColor: 'yellow'
+                    }
+                ]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        labels: {
+                            font: {
+                                size: 18
+                            }
+                        }
+                    }
+                }
+            }
+        });
     });
 });

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using LinqKit;
+using Microsoft.EntityFrameworkCore;
 using ProgrammersBlog.Shared.Data.Abstract;
 using ProgrammersBlog.Shared.Entities.Abstract;
 using System;
@@ -18,6 +19,8 @@ namespace ProgrammersBlog.Shared.Data.Concrete.EntityFramework
         public EfEntityRepositoryBase(DbContext context)
         {
             _context = context;
+            //Include referanslarin hepsini getirmek yerine istenilen degerleri getirmesi saglaniyor.
+            //_context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
         public async Task<Tentity> AddAsync(Tentity entity)
@@ -56,7 +59,32 @@ namespace ProgrammersBlog.Shared.Data.Concrete.EntityFramework
                     query = query.Include(item);
                 }
             }
-            return await query.ToListAsync();
+            return await query.AsNoTracking().ToListAsync();
+        }
+
+        public async Task<IList<Tentity>> GetAllAsync(IList<Expression<Func<Tentity, bool>>> predicates, IList<Expression<Func<Tentity, object>>> includeProperties)
+        {
+            IQueryable<Tentity> query = _context.Set<Tentity>();
+            if (predicates != null && predicates.Any())
+            {
+                foreach (var predicate in predicates)
+                {
+                    query = query.Where(predicate);
+                }
+            }
+            if (includeProperties != null && includeProperties.Any())
+            {
+                foreach (var item in includeProperties)
+                {
+                    query = query.Include(item);
+                }
+            }
+            return await query.AsNoTracking().ToListAsync();
+        }
+
+        public IQueryable<Tentity> GetAsQueryable()
+        {
+            return _context.Set<Tentity>().AsQueryable();
         }
 
         public async Task<Tentity> GetAsync(Expression<Func<Tentity, bool>> predicate, params Expression<Func<Tentity, object>>[] includeProperties)
@@ -70,7 +98,53 @@ namespace ProgrammersBlog.Shared.Data.Concrete.EntityFramework
                     query = query.Include(item);
                 }
             }
-            return await query.SingleOrDefaultAsync();
+            return await query.AsNoTracking().SingleOrDefaultAsync();
+        }
+
+        public async Task<Tentity> GetAsync(IList<Expression<Func<Tentity, bool>>> predicates, IList<Expression<Func<Tentity, object>>> includeProperties)
+        {
+            IQueryable<Tentity> query = _context.Set<Tentity>();
+            if(predicates != null && predicates.Any())
+            {
+                foreach (var predicate in predicates)
+                {
+                    query = query.Where(predicate);
+                }
+            }
+            if (includeProperties != null &&includeProperties.Any())
+            {
+                foreach (var item in includeProperties)
+                {
+                    query = query.Include(item);
+                }
+            }
+            return await query.AsNoTracking().SingleOrDefaultAsync();
+        }
+
+        public async Task<IList<Tentity>> SearchAsync(IList<Expression<Func<Tentity, bool>>> predicates, params Expression<Func<Tentity, object>>[] includeProperties)
+        {
+            IQueryable<Tentity> query = _context.Set<Tentity>();
+            if (predicates.Any())
+            {
+                var predicateChain = PredicateBuilder.New<Tentity>();
+                foreach (var predicate in predicates)
+                {
+                    // default olarak ==> predicate 1 && predicate 2
+                    // linqkit ile predicate 1 || predicate 2 yapma şansı
+                    predicateChain.Or(predicate);
+                }
+                query = query.Where(predicateChain);
+            }
+
+            if (includeProperties.Any())
+            {
+                foreach (var includeProperty in includeProperties)
+                {
+                    query = query.Include(includeProperty);
+                }
+            }
+
+            return await query.AsNoTracking().ToListAsync();
         }
 
         public async Task<Tentity> UpdateAsync(Tentity entity)
